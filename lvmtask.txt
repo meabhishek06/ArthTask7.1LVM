@@ -1,0 +1,70 @@
+import os
+print("Welcome Abhishek")
+print()
+while(True):
+    os.system("clear")
+    print("\tIn this, by choosing Options you can automate the LVM functions")
+    boole=True
+    print()
+    print("""Press 1 : Create lvm storage for the desired location
+Press 2 : Increase size of Hadoop Storage
+Press 3 : Reduce the size of Hadoop storage
+Press 4 : To Exit""")
+    
+    
+    a=int(input("Enter Your Choice : "))
+    while(True):
+        if(a==1):
+            os.system("fdisk -l")
+
+            folder=input("Enter Directory for Hadoop : ")
+            adn=input("Enter the attached disk name : ")
+            stn=input("Enter unique name for PV, VG and LV : ")
+            os.system("pvcreate {}".format(adn))
+            print("""PV created.... need to craete VG
+Creating VG.....""")
+            os.system("vgcreate {}vg {}".format(stn,adn))
+            print("""VG created... need to craete LV
+Creating LV.....""")
+            lvs=int(input("Enter Storage(in GB) you want to provide should be less than 9.98GB : "))
+            os.system("lvcreate --size {}G --name {}lv {}vg".format(lvs,stn,stn))
+            os.system("mkfs.ext4 /dev/{}vg/{}lv".format(stn,stn))
+            os.system("mount /dev/{}vg/{}lv /{}".format(stn,stn,folder))
+            print("\t Storage has been alloted and LV Created")
+            
+            os.system("lvdisplay")
+
+            print()
+            input("Press Any key to Continue... ")
+            break
+        elif(a==2):
+            stn=input("Enter unique name for PV, VG and LV : ")
+            s=int(input("Enter how much storage(in GB) you want to increaese  : "))
+            os.system("lvextend --size +{}G /dev/mapper/{}vg/{}lv ".format(s,stn,stn))
+            os.system("resize2fs /dev/{}vg/{}lv".format(stn,stn))
+            os.system("lvdisplay")
+            print()
+            print("\tStorage has been successfully Increased")
+            os.system("df -h")
+            input("Press Any key to Continue... ")
+            break
+        elif(a==3):
+            s=int(input("Decrease the Stoareg to : "))
+            folder=input("Enter Hadoop Mount Location: ")
+            stn=input("Enter unique name for PV, VG and LV : ")
+            os.system("hadoop-daemon.sh stop datanode")
+            os.system("umount /dev/{}vg/{}lv".format(stn,stn))
+            print("Performing scan and checking of storage")
+            os.system("e2fsck -f /dev/{}vg/{}lv".format(stn,stn))
+            os.system("resize2fs /dev/{}vg/{}lv {}G".format(stn,stn,s))
+            os.system("lvreduce -L {}G /dev/{}vg/{}lv".format(s,stn,stn))
+            os.system("mount /dev/mapper/{}vg-{}lv {}".format(stn,stn,folder))
+            os.system("lvdisplay")
+            os.system("hadoop-daemon.sh start datanode")
+            os.system("df -h")
+            print()
+            input("Press Any Key To Continue... ")
+        elif(a==4):
+         exit()
+        break
+
